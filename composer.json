@@ -9,5 +9,14 @@
         }
     ],
     "minimum-stability": "dev",
-    "require": {}
+    "require": {
+        "pimple/pimple": "v3.0.2",
+        "monolog/monolog": "1.21.0",
+        "silex/silex": "v2.0.3"
+    },
+    "autoload": {
+        "psr-0" : {
+            "CasaCafe\\Library\\Logger" : "src"
+        }
+    }
 }
