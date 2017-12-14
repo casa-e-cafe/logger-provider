@@ -1,0 +1,13 @@
+{
+    "name": "casaecafe/logger-provider",
+    "description": "Silex provider with some customizations",
+    "type": "library",
+    "authors": [
+        {
+            "name": "Rafael Pereira Girolineto",
+            "email": "rafapg.85@gmail.com"
+        }
+    ],
+    "minimum-stability": "dev",
+    "require": {}
+}
