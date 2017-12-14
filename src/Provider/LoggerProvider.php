@@ -17,7 +17,7 @@ class LoggerProvider implements ServiceProviderInterface
 {
     public function register(Container $pimple)
     {
-        $pimple->register(new MonologServiceProvider());
+        $pimple->register(new MonologServiceProvider(), $pimple['monolog']);
 
         /** @var Logger $monolog */
         $monolog = $pimple['monolog'];
