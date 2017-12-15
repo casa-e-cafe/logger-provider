@@ -15,8 +15,8 @@
         "silex/silex": "v2.0.3"
     },
     "autoload": {
-        "psr-0" : {
-            "CasaCafe\\Library\\Logger" : "src"
+        "psr-4": {
+            "CasaCafe\\Library\\Logger\\" : "src"
         }
     }
 }

@@ -7,7 +7,6 @@
 
 namespace CasaCafe\Library\Logger\Provider;
 
-
 use Monolog\Logger;
 use Pimple\Container;
 use Pimple\ServiceProviderInterface;
