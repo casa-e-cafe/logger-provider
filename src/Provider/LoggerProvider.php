@@ -41,7 +41,6 @@ class LoggerProvider implements ServiceProviderInterface
                 );
 
                 $record['context'] = $context;
-
                 return $record;
             }
         );
