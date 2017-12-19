@@ -8,47 +8,29 @@
 namespace CasaCafe\Library\Logger\Processor;
 
 
-class SensitiveStringProcessor
-{
-    CONST DEFAULT_SENSITIVE_WORDS_REGEX = '/senha|pass/';
-    CONST DEFAULT_STR_REPLACEMENT = '[** This log message could contain sensitive information, so it was removed **]';
+use CasaCafe\Library\Logger\Processor\Util\InfoReplacementTrait;
 
-    private $sensitiveWordsRegex;
-    private $stringReplacement;
+class SensitiveStringProcessor implements SensitiveInfoProcessorInterface
+{
+    use InfoReplacementTrait;
 
     public function __construct(array $config = []) {
-        $this->setupSensitiveWordsRegex($config);
-        $this->setupStringReplacementMessage($config);
+
+        $internalConfig = [
+            'word-regex-default' => 'senha|pass',
+            'word-regex-key' => 'processor-regex',
+            'replacement-default' => '[** This log message could contain sensitive information, so it was removed **]',
+            'replacement-key' => 'string-replacement'
+        ];
+
+        $this->setupProcessor($config, $internalConfig);
     }
 
-    public function replaceMessageSensitiveString(string $message) : string {
+    public function replaceSensitiveInfo($message) : string {
 
         if ($this->isSensitiveString($message)) {
-            $message = $this->stringReplacement;
+            $message = $this->replacementString;
         }
         return $message;
-    }
-
-    private function setupSensitiveWordsRegex($config) {
-
-        $this->sensitiveWordsRegex = self::DEFAULT_SENSITIVE_WORDS_REGEX;
-
-        if (isset($config['processor-regex'])) {
-            $customRegex = sprintf('/%s/', $config['processor-regex']);
-            $this->sensitiveWordsRegex = $customRegex;
-        }
-    }
-
-    private function setupStringReplacementMessage($config) {
-
-        $this->stringReplacement = self::DEFAULT_STR_REPLACEMENT;
-
-        if (isset($config['string-replacement'])) {
-            $this->stringReplacement = $config['string-replacement'];
-        }
-    }
-
-    private function isSensitiveString($value) {
-        return preg_match($this->sensitiveWordsRegex, $value);
     }
 }

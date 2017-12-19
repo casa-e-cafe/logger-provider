@@ -14,22 +14,25 @@ class RecordLogProcessor
     private $messageProcessor;
     private $contextProcessor;
 
-    public function __construct(array $config = []) {
+    public function __construct(
+        SensitiveInfoProcessorInterface $messageProcessor,
+        SensitiveInfoProcessorInterface $contextProcessor
+    ) {
 
-        $this->messageProcessor = new SensitiveStringProcessor($config);
-        $this->contextProcessor = new SensitiveArrayProcessor($config);
+        $this->messageProcessor = $messageProcessor;
+        $this->contextProcessor = $contextProcessor;
     }
 
     public function getProcessorFunction() : callable {
         return function ($record) {
 
             if (isset( $record['message'])) {
-                $record['message'] = $this->messageProcessor->replaceMessageSensitiveString($record['message']);
+                $record['message'] = $this->messageProcessor->replaceSensitiveInfo($record['message']);
             }
 
             if (isset( $record['context'])) {
                 $arrayContext = json_decode(json_encode($record['context']),TRUE);
-                $record['context'] = $this->contextProcessor->replaceArraySensitiveInfo($arrayContext);
+                $record['context'] = $this->contextProcessor->replaceSensitiveInfo($arrayContext);
             }
 
             return $record;

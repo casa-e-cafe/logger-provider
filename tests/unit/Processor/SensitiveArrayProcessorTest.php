@@ -19,7 +19,7 @@ class SensitiveArrayProcessorTest extends TestCase
 
         $processor = new SensitiveArrayProcessor();
         $initialContext = ['batata' => 'frita'];
-        $changedContext = $processor->replaceArraySensitiveInfo($initialContext);
+        $changedContext = $processor->replaceSensitiveInfo($initialContext);
         $this->assertEquals($initialContext, $changedContext);
     }
 
@@ -28,7 +28,7 @@ class SensitiveArrayProcessorTest extends TestCase
 
         $processor = new SensitiveArrayProcessor();
         $initialContext = ['batata' => 'frita', 'senha' => 'nao deve ser exibida'];
-        $changedContext = $processor->replaceArraySensitiveInfo($initialContext);
+        $changedContext = $processor->replaceSensitiveInfo($initialContext);
 
         $expectedContext = ['batata' => 'frita', 'senha' => '**********'];
         $this->assertEquals($expectedContext, $changedContext);
@@ -46,7 +46,7 @@ class SensitiveArrayProcessorTest extends TestCase
                 'pass' => 'tambem nao deve ser exibida'
             ]
         ];
-        $changedContext = $processor->replaceArraySensitiveInfo($initialContext);
+        $changedContext = $processor->replaceSensitiveInfo($initialContext);
 
         $expectedContext =
         $initialContext = [
@@ -60,4 +60,45 @@ class SensitiveArrayProcessorTest extends TestCase
         $this->assertEquals($expectedContext, $changedContext);
     }
 
+    public function testConfigurableRegexTest() {
+
+        $context = [
+            'batata' => 'frita',
+            'senha' => 'deve ser exibida',
+            'outros' => [
+                'teste' => 'bora',
+                'samba' => 'tambem nao deve ser exibida'
+            ]
+        ];
+
+        $expectedContext = [
+            'batata' => 'frita',
+            'senha' => 'deve ser exibida',
+            'outros' => [
+                'teste' => 'bora',
+                'samba' => '**********'
+            ]
+        ];
+
+        $config = ['processor-regex' => 'samba'];
+
+        $processor = new SensitiveArrayProcessor($config);
+        $replacedContext = $processor->replaceSensitiveInfo($context);
+
+        $this->assertEquals($expectedContext, $replacedContext);
+    }
+
+    public function testConfigurableContextReplacement() {
+
+        $replacementString = '[** HIDDEN **]';
+
+        $context = ['pass' =>  '123Catorze'];
+        $config = ['context-replacement' => $replacementString];
+
+        $processor = new SensitiveArrayProcessor($config);
+        $replacedContext = $processor->replaceSensitiveInfo($context);
+
+        $expectedContext = ['pass' =>  $replacementString];
+        $this->assertEquals($expectedContext, $replacedContext);
+    }
 }

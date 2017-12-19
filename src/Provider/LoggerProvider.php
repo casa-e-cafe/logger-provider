@@ -7,7 +7,11 @@
 
 namespace CasaCafe\Library\Logger\Provider;
 
-use Monolog\Logger;
+use CasaCafe\Library\Logger\Logger;
+use CasaCafe\Library\Logger\Processor\RecordLogProcessor;
+use CasaCafe\Library\Logger\Processor\SensitiveArrayProcessor;
+use CasaCafe\Library\Logger\Processor\SensitiveStringProcessor;
+use Monolog\Logger as MonologLogger;
 use Pimple\Container;
 use Pimple\ServiceProviderInterface;
 use Silex\Provider\MonologServiceProvider;
@@ -18,31 +22,40 @@ class LoggerProvider implements ServiceProviderInterface
     {
         $pimple->register(new MonologServiceProvider(), $pimple['monolog']);
 
-        /** @var Logger $monolog */
-        $monolog = $pimple['monolog'];
-        $monolog->pushProcessor(
-            function ($record) {
-                $logErrorMsg = '[** This log message could contain sensitive information, so it was removed **]';
-                $passRegex = '/.*(pass|senha).*/';
+        $pimple['log-processor'] = function (Container $pimple) {
+            return new RecordLogProcessor(
+                $pimple['message-log-processor'],
+                $pimple['context-log-processor']
+            );
+        };
 
-                $context = $record['context'];
-                if (preg_match($passRegex, strtolower($record['message']))) {
-                    $record['message'] = $logErrorMsg;
-                }
+        $pimple['message-log-processor'] = function (Container $pimple) {
+            return new SensitiveStringProcessor($pimple['log-processor-cfg-validated']);
+        };
 
-                array_walk_recursive(
-                    $context,
-                    function (&$value, $key, $passRegex) {
-                        if (preg_match($passRegex, strtolower($key))) {
-                            $value = '**********';
-                        }
-                    },
-                    $passRegex
-                );
+        $pimple['context-log-processor'] = function (Container $pimple) {
+            return new SensitiveArrayProcessor($pimple['log-processor-cfg-validated']);
+        };
 
-                $record['context'] = $context;
-                return $record;
+        $pimple['log-processor-cfg-validated'] = function (Container $pimple) {
+            $logProcessorConfig = [];
+            if (isset($pimple['log-processor-configuration'])) {
+                $logProcessorConfig = $pimple['log-processor-configuration'];
             }
-        );
+            return $logProcessorConfig;
+        };
+
+        $pimple['log-processor-function'] = function (Container $pimple) {
+
+            /** @var RecordLogProcessor $logProcessor */
+            $logProcessor = $pimple['log-processor'];
+            return $logProcessor->getProcessorFunction();
+        };
+
+        /** @var MonologLogger $monolog */
+        $monolog = $pimple['monolog'];
+        $monolog->pushProcessor($pimple['log-processor-function']);
+
+        Logger::getInstance()->setVendorLogger($pimple['monolog']);
     }
 }

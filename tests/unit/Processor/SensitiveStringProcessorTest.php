@@ -17,32 +17,54 @@ class SensitiveStringProcessorTest extends TestCase
 
     public function testDoNotReplaceString() {
         $processor = new SensitiveStringProcessor();
-        $replacedString = $processor->replaceMessageSensitiveString('abracadabra');
+        $replacedString = $processor->replaceSensitiveInfo('abracadabra');
         $this->assertEquals('abracadabra', $replacedString);
     }
 
     public function testReplaceSenhaString() {
         $processor = new SensitiveStringProcessor();
-        $replacedString = $processor->replaceMessageSensitiveString('senha');
+        $replacedString = $processor->replaceSensitiveInfo('senha');
         $this->assertEquals(self::STRING_REPLACED, $replacedString);
     }
 
     public function testReplacePassString() {
         $processor = new SensitiveStringProcessor();
-        $replacedString = $processor->replaceMessageSensitiveString('pass');
+        $replacedString = $processor->replaceSensitiveInfo('pass');
         $this->assertEquals(self::STRING_REPLACED, $replacedString);
     }
 
     public function testReplaceComplexString() {
         $processor = new SensitiveStringProcessor();
-        $replacedString = $processor->replaceMessageSensitiveString('should not see this pass message');
+        $replacedString = $processor->replaceSensitiveInfo('should not see this pass message');
         $this->assertEquals(self::STRING_REPLACED, $replacedString);
     }
 
     public function testDoNotReplaceComplexString() {
         $processor = new SensitiveStringProcessor();
-        $replacedString = $processor->replaceMessageSensitiveString('should see this message');
+        $replacedString = $processor->replaceSensitiveInfo('should see this message');
         $this->assertEquals('should see this message', $replacedString);
     }
 
+    public function testConfigurableRegexTest() {
+
+        $message = 'tem que ver se tem samba';
+        $config = ['processor-regex' => 'samba'];
+
+        $processor = new SensitiveStringProcessor($config);
+        $replacedString = $processor->replaceSensitiveInfo($message);
+
+        $this->assertEquals(self::STRING_REPLACED, $replacedString);
+    }
+
+    public function testConfigurableStringReplacement() {
+
+        $replacementString = '[** HIDDEN **]';
+        $config = ['string-replacement' => $replacementString];
+        $message = 'tem que ver se tem senha';
+
+        $processor = new SensitiveStringProcessor($config);
+        $replacedString = $processor->replaceSensitiveInfo($message);
+
+        $this->assertEquals($replacementString, $replacedString);
+    }
 }

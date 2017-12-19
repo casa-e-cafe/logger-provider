@@ -8,190 +8,194 @@
 namespace CasaCafe\Tests\Library\Logger\Processor;
 
 use CasaCafe\Library\Logger\Processor\RecordLogProcessor;
+use CasaCafe\Library\Logger\Processor\SensitiveArrayProcessor;
+use CasaCafe\Library\Logger\Processor\SensitiveStringProcessor;
 use PHPUnit\Framework\TestCase;
 
 class RecordLogProcessorTest extends TestCase
 {
 
     public function testPasswordProcessorExists() {
-        $processor = new RecordLogProcessor();
+
+        $messageProcessorMock = $this->getMessageProcessorMock();
+        $contextProcessorMock = $this->getContextProcessorMock();
+        $processor = new RecordLogProcessor($messageProcessorMock, $contextProcessorMock);
         $this->assertInstanceOf('CasaCafe\Library\Logger\Processor\RecordLogProcessor', $processor);
     }
 
     public function testProcessorFunctionIsAFunction() {
-        $processor = new RecordLogProcessor();
+
+        $messageProcessorMock = $this->getMessageProcessorMock();
+        $contextProcessorMock = $this->getContextProcessorMock();
+        $processor = new RecordLogProcessor($messageProcessorMock, $contextProcessorMock);
         $function = $processor->getProcessorFunction();
         $this->assertInternalType("callable", $function);
     }
 
-    public function testProcessorFunctionWithOnlyMessageContext() {
-        $processor = new RecordLogProcessor();
+    public function testOnlyMessageRecordShouldCallMessageProcessor() {
+
+        $recordMessage = 'blah';
+        $replacedMessage = 'aoisjdfoijasd';
+
+        $messageProcessorMock = $this->getMessageProcessorMock();
+        $messageProcessorMock->expects($this->once())
+            ->method('replaceSensitiveInfo')
+            ->with($recordMessage)
+            ->willReturn($replacedMessage);
+
+        $contextProcessorMock = $this->getContextProcessorMock();
+        $contextProcessorMock->expects($this->never())
+            ->method('replaceSensitiveInfo');
+
+        $processor = new RecordLogProcessor($messageProcessorMock, $contextProcessorMock);
         $function = $processor->getProcessorFunction();
 
-        $record = ['message' => 'blah'];
+        $record = ['message' => $recordMessage];
         $processedRecord = $function($record);
 
-        $this->assertEquals($record, $processedRecord);
-    }
-
-    public function testProcessorFunctionWithOnlyContextContext() {
-
-        $processor = new RecordLogProcessor();
-        $function = $processor->getProcessorFunction();
-
-        $record = ['context' => ['alguma' => 'coisa']];
-        $processedRecord = $function($record);
-
-        $this->assertEquals($record, $processedRecord);
-    }
-
-    public function testProcessorFunctionWithSensitiveInfo() {
-
-        $processor = new RecordLogProcessor();
-        $function = $processor->getProcessorFunction();
-
-        $record = [
-            'message' => 'tem que ver se tem senha',
-            'context' => [
-                'batata' => 'frita',
-                'senha' => 'nao deve ser exibida',
-                'outros' => [
-                    'teste' => 'bora',
-                    'pass' => 'tambem nao deve ser exibida'
-                ]
-            ]
-        ];
-
-        $processedRecord = $function($record);
-
-        $expectedRecord = [
-            'message' => '[** This log message could contain sensitive information, so it was removed **]',
-            'context' => [
-                'batata' => 'frita',
-                'senha' => '**********',
-                'outros' => [
-                    'teste' => 'bora',
-                    'pass' => '**********'
-                ]
-            ]
-        ];
-
+        $expectedRecord = ['message' => $replacedMessage];
         $this->assertEquals($expectedRecord, $processedRecord);
     }
 
+    public function testOnlyContextRecordShouldCallContextProcessor() {
 
-    public function testStdClassContextArraySentiveInfo() {
-        $processor = new RecordLogProcessor();
+        $recordContext = ['alguma' => 'coisa'];
+        $replacedRecordContext = ['alguma' => 'showaeihraosjdfasd'];
+        $messageProcessorMock = $this->getMessageProcessorMock();
+        $messageProcessorMock->expects($this->never())
+            ->method('replaceSensitiveInfo');
+
+        $contextProcessorMock = $this->getContextProcessorMock();
+        $contextProcessorMock->expects($this->once())
+            ->method('replaceSensitiveInfo')
+            ->with($recordContext)
+            ->willReturn($replacedRecordContext);
+
+        $processor = new RecordLogProcessor($messageProcessorMock, $contextProcessorMock);
         $function = $processor->getProcessorFunction();
 
+        $record = ['context' => $recordContext];
+        $processedRecord = $function($record);
+
+        $expectedRecord = ['context' => $replacedRecordContext];
+        $this->assertEquals($expectedRecord, $processedRecord);
+    }
+
+    public function testFullRecordShouldCallBothProcessors() {
+
+        $recordMessage = 'blah';
+        $replacedRecordMessage = 'ajsdofjaoisjd';
+        $recordContext = ['alguma' => 'coisa'];
+        $replacedRecordContext = ['alguma' => 'pessoa'];
+        $record = ['message' => $recordMessage, 'context' => $recordContext];
+
+        $messageProcessorMock = $this->getMessageProcessorMock();
+        $messageProcessorMock->expects($this->once())
+            ->method('replaceSensitiveInfo')
+            ->with($recordMessage)
+            ->willReturn($replacedRecordMessage);
+
+        $contextProcessorMock = $this->getContextProcessorMock();
+        $contextProcessorMock->expects($this->once())
+            ->method('replaceSensitiveInfo')
+            ->with($recordContext)
+            ->willReturn($replacedRecordContext);
+
+        $processor = new RecordLogProcessor($messageProcessorMock, $contextProcessorMock);
+        $function = $processor->getProcessorFunction();
+
+        $processedRecord = $function($record);
+        $expectedRecord = ['message' => $replacedRecordMessage, 'context' => $replacedRecordContext];
+        $this->assertEquals($expectedRecord, $processedRecord);
+    }
+
+    public function testEmptyRecordShouldCallNoneProcessor() {
+
+        $record = [];
+
+        $messageProcessorMock = $this->getMessageProcessorMock();
+        $messageProcessorMock->expects($this->never())
+            ->method('replaceSensitiveInfo');
+
+        $contextProcessorMock = $this->getContextProcessorMock();
+        $contextProcessorMock->expects($this->never())
+            ->method('replaceSensitiveInfo');
+
+        $processor = new RecordLogProcessor($messageProcessorMock, $contextProcessorMock);
+        $function = $processor->getProcessorFunction();
+
+        $processedRecord = $function($record);
+
+        $this->assertEquals($record, $processedRecord);
+    }
+
+    public function testStdClassContextShouldCallContextProcessor() {
         $initialContext = new \stdClass();
         $initialContext->batata = 'frita';
-        $initialContext->senha = 'nao deve ser exibida';
+        $initialContext->chave = 'valor';
         $initialContext->outros = new \stdClass();
         $initialContext->outros->teste = 'bora';
-        $initialContext->outros->pass = 'tambem nao deve ser exibida';
 
         $record = [
-            'message' => 'tem que ver se tem senha',
             'context' => $initialContext
         ];
 
-
-        $processedRecord = $function($record);
-        $expectedRecord = [
-            'message' => '[** This log message could contain sensitive information, so it was removed **]',
-            'context' => [
-                'batata' => 'frita',
-                'senha' => '**********',
-                'outros' => [
-                    'teste' => 'bora',
-                    'pass' => '**********'
-                ]
+        $initialContextArray = [
+            'batata' => 'frita',
+            'chave' => 'valor',
+            'outros' => [
+                'teste' => 'bora'
             ]
         ];
 
+        $messageProcessorMock = $this->getMessageProcessorMock();
+
+        $contextProcessorMock = $this->getContextProcessorMock();
+        $contextProcessorMock->expects($this->once())
+            ->method('replaceSensitiveInfo')
+            ->with($initialContextArray)
+            ->willReturn($initialContextArray);
+
+        $processor = new RecordLogProcessor($messageProcessorMock, $contextProcessorMock);
+
+        $function = $processor->getProcessorFunction();
+        $processedRecord = $function($record);
+
+        $expectedRecord = ['context' => $initialContextArray];
         $this->assertEquals($expectedRecord, $processedRecord);
     }
 
     public function testProcessorFunctionWithNullMessage() {
 
-        $processor = new RecordLogProcessor();
+        $messageProcessorMock = $this->getMessageProcessorMock();
+        $messageProcessorMock->expects($this->never())
+            ->method('replaceSensitiveInfo');
+        $contextProcessorMock = $this->getContextProcessorMock();
+        $processor = new RecordLogProcessor($messageProcessorMock, $contextProcessorMock);
+
         $function = $processor->getProcessorFunction();
 
-        $record = ['message' => null, 'context' => ['alguma' => 'coisa']];
+        $record = ['message' => null];
         $processedRecord = $function($record);
 
         $this->assertEquals($record, $processedRecord);
     }
 
-    public function testConfigurableRegexTest() {
+    private function getContextProcessorMock() {
 
-        $config = ['processor-regex' => 'samba'];
-        $processor = new RecordLogProcessor($config);
-        $function = $processor->getProcessorFunction();
-
-        $record = [
-            'message' => 'tem que ver se tem samba',
-            'context' => [
-                'batata' => 'frita',
-                'senha' => 'deve ser exibida',
-                'outros' => [
-                    'teste' => 'bora',
-                    'samba' => 'tambem nao deve ser exibida'
-                ]
-            ]
-        ];
-
-        $processedRecord = $function($record);
-
-        $expectedRecord = [
-            'message' => '[** This log message could contain sensitive information, so it was removed **]',
-            'context' => [
-                'batata' => 'frita',
-                'senha' => 'deve ser exibida',
-                'outros' => [
-                    'teste' => 'bora',
-                    'samba' => '**********'
-                ]
-            ]
-        ];
-
-        $this->assertEquals($expectedRecord, $processedRecord);
+        /** @var \PHPUnit_Framework_MockObject_MockObject|SensitiveArrayProcessor $messageProcessorMock */
+        $messageProcessorMock = $this->getMockBuilder(SensitiveArrayProcessor::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        return $messageProcessorMock;
     }
 
-    public function testConfigurableStringReplacement() {
+    private function getMessageProcessorMock() {
 
-        $config = ['string-replacement' => '[** HIDDEN **]'];
-        $processor = new RecordLogProcessor($config);
-        $function = $processor->getProcessorFunction();
-        $record = [
-            'message' => 'tem que ver se tem senha',
-            'context' => [ ]
-        ];
-        $processedRecord = $function($record);
-        $expectedRecord = [
-            'message' => '[** HIDDEN **]',
-            'context' => [ ]
-        ];
-
-        $this->assertEquals($expectedRecord, $processedRecord);
-    }
-
-    public function testConfigurableContextReplacement() {
-
-        $config = ['context-replacement' => '[** HIDDEN **]'];
-        $processor = new RecordLogProcessor($config);
-        $function = $processor->getProcessorFunction();
-        $record = [
-            'message' => 'oi, tudo bem?',
-            'context' => ['pass' =>  '123Catorze']
-        ];
-        $processedRecord = $function($record);
-        $expectedRecord = [
-            'message' => 'oi, tudo bem?',
-            'context' => ['pass' =>  '[** HIDDEN **]']
-        ];
-
-        $this->assertEquals($expectedRecord, $processedRecord);
+        /** @var \PHPUnit_Framework_MockObject_MockObject|SensitiveStringProcessor $messageProcessorMock */
+        $messageProcessorMock = $this->getMockBuilder(SensitiveStringProcessor::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        return $messageProcessorMock;
     }
 }
