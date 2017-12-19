@@ -18,5 +18,8 @@
         "psr-4": {
             "CasaCafe\\Library\\Logger\\" : "src"
         }
+    },
+    "require-dev": {
+        "phpunit/phpunit": "~5.6"
     }
 }
