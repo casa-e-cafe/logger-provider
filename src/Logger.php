@@ -10,7 +10,7 @@ namespace CasaCafe\Library\Logger;
 
 use Psr\Log\LoggerInterface;
 
-class Logger
+class Logger implements LoggerInterface
 {
     static private $instance;
 
@@ -52,5 +52,50 @@ class Logger
         $debugContext = $context;
         $debugContext[] = $exception->getTraceAsString();
         $this->vendorLogger->debug($exceptionMessage, $debugContext);
+    }
+
+    public function emergency($message, array $context = array())
+    {
+        $this->vendorLogger->emergency($message, $context);
+    }
+
+    public function alert($message, array $context = array())
+    {
+        $this->vendorLogger->alert($message, $context);
+    }
+
+    public function critical($message, array $context = array())
+    {
+        $this->vendorLogger->critical($message, $context);
+    }
+
+    public function error($message, array $context = array())
+    {
+        $this->vendorLogger->error($message, $context);
+    }
+
+    public function warning($message, array $context = array())
+    {
+        $this->vendorLogger->warning($message, $context);
+    }
+
+    public function notice($message, array $context = array())
+    {
+        $this->vendorLogger->notice($message, $context);
+    }
+
+    public function info($message, array $context = array())
+    {
+        $this->vendorLogger->info($message, $context);
+    }
+
+    public function debug($message, array $context = array())
+    {
+        $this->vendorLogger->debug($message, $context);
+    }
+
+    public function log($level, $message, array $context = array())
+    {
+        $this->vendorLogger->log($level, $message, $context);
     }
 }
