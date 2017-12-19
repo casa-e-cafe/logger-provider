@@ -10,9 +10,9 @@
     ],
     "minimum-stability": "dev",
     "require": {
-        "pimple/pimple": "v3.0.2",
-        "monolog/monolog": "1.21.0",
-        "silex/silex": "v2.0.3"
+        "pimple/pimple": "~v3",
+        "monolog/monolog": "~1",
+        "silex/silex": "~2"
     },
     "autoload": {
         "psr-4": {
