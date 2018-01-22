@@ -7,22 +7,21 @@
 
 namespace CasaCafe\Library\Logger\Processor\Util;
 
-
 trait InfoReplacementTrait
 {
     private $sensitiveWordsRegex;
     private $replacementString;
     private $internalConfig;
 
-    private function setupProcessor($externalConfig, $internalConfig) {
-
+    private function setupProcessor($externalConfig, $internalConfig)
+    {
         $this->internalConfig = $internalConfig;
         $this->setupSensitiveWordsRegex($externalConfig);
         $this->setupReplacementString($externalConfig);
     }
 
-    private function setupSensitiveWordsRegex($config) {
-
+    private function setupSensitiveWordsRegex($config)
+    {
         $regexString = $this->getConfigValueIfExists(
             $config,
             $this->internalConfig['word-regex-key'],
@@ -34,8 +33,8 @@ trait InfoReplacementTrait
         $this->sensitiveWordsRegex = $regex;
     }
 
-    private function setupReplacementString($config) {
-
+    private function setupReplacementString($config)
+    {
         $this->replacementString = $this->getConfigValueIfExists(
             $config,
             $this->internalConfig['replacement-key'],
@@ -43,7 +42,8 @@ trait InfoReplacementTrait
         );
     }
 
-    private function getConfigValueIfExists($config, $configKey, $defaultValue) : string {
+    private function getConfigValueIfExists($config, $configKey, $defaultValue) : string
+    {
         $value = $defaultValue;
 
         if (isset($config[$configKey])) {
@@ -53,7 +53,8 @@ trait InfoReplacementTrait
         return $value;
     }
 
-    private function isSensitiveString($value) {
+    private function isSensitiveString($value)
+    {
         return preg_match($this->sensitiveWordsRegex, $value);
     }
 }

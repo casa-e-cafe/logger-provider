@@ -7,7 +7,6 @@
 
 namespace CasaCafe\Library\Logger\Processor;
 
-
 interface SensitiveInfoProcessorInterface
 {
     public function __construct(array $config = []);

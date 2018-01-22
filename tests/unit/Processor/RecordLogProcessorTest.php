@@ -15,16 +15,16 @@ use PHPUnit\Framework\TestCase;
 class RecordLogProcessorTest extends TestCase
 {
 
-    public function testPasswordProcessorExists() {
-
+    public function testPasswordProcessorExists()
+    {
         $messageProcessorMock = $this->getMessageProcessorMock();
         $contextProcessorMock = $this->getContextProcessorMock();
         $processor = new RecordLogProcessor($messageProcessorMock, $contextProcessorMock);
         $this->assertInstanceOf('CasaCafe\Library\Logger\Processor\RecordLogProcessor', $processor);
     }
 
-    public function testProcessorFunctionIsAFunction() {
-
+    public function testProcessorFunctionIsAFunction()
+    {
         $messageProcessorMock = $this->getMessageProcessorMock();
         $contextProcessorMock = $this->getContextProcessorMock();
         $processor = new RecordLogProcessor($messageProcessorMock, $contextProcessorMock);
@@ -32,8 +32,8 @@ class RecordLogProcessorTest extends TestCase
         $this->assertInternalType("callable", $function);
     }
 
-    public function testOnlyMessageRecordShouldCallMessageProcessor() {
-
+    public function testOnlyMessageRecordShouldCallMessageProcessor()
+    {
         $recordMessage = 'blah';
         $replacedMessage = 'aoisjdfoijasd';
 
@@ -57,8 +57,8 @@ class RecordLogProcessorTest extends TestCase
         $this->assertEquals($expectedRecord, $processedRecord);
     }
 
-    public function testOnlyContextRecordShouldCallContextProcessor() {
-
+    public function testOnlyContextRecordShouldCallContextProcessor()
+    {
         $recordContext = ['alguma' => 'coisa'];
         $replacedRecordContext = ['alguma' => 'showaeihraosjdfasd'];
         $messageProcessorMock = $this->getMessageProcessorMock();
@@ -81,8 +81,8 @@ class RecordLogProcessorTest extends TestCase
         $this->assertEquals($expectedRecord, $processedRecord);
     }
 
-    public function testFullRecordShouldCallBothProcessors() {
-
+    public function testFullRecordShouldCallBothProcessors()
+    {
         $recordMessage = 'blah';
         $replacedRecordMessage = 'ajsdofjaoisjd';
         $recordContext = ['alguma' => 'coisa'];
@@ -109,8 +109,8 @@ class RecordLogProcessorTest extends TestCase
         $this->assertEquals($expectedRecord, $processedRecord);
     }
 
-    public function testEmptyRecordShouldCallNoneProcessor() {
-
+    public function testEmptyRecordShouldCallNoneProcessor()
+    {
         $record = [];
 
         $messageProcessorMock = $this->getMessageProcessorMock();
@@ -129,7 +129,8 @@ class RecordLogProcessorTest extends TestCase
         $this->assertEquals($record, $processedRecord);
     }
 
-    public function testStdClassContextShouldCallContextProcessor() {
+    public function testStdClassContextShouldCallContextProcessor()
+    {
         $initialContext = new \stdClass();
         $initialContext->batata = 'frita';
         $initialContext->chave = 'valor';
@@ -165,8 +166,8 @@ class RecordLogProcessorTest extends TestCase
         $this->assertEquals($expectedRecord, $processedRecord);
     }
 
-    public function testProcessorFunctionWithNullMessage() {
-
+    public function testProcessorFunctionWithNullMessage()
+    {
         $messageProcessorMock = $this->getMessageProcessorMock();
         $messageProcessorMock->expects($this->never())
             ->method('replaceSensitiveInfo');
@@ -181,8 +182,8 @@ class RecordLogProcessorTest extends TestCase
         $this->assertEquals($record, $processedRecord);
     }
 
-    private function getContextProcessorMock() {
-
+    private function getContextProcessorMock()
+    {
         /** @var \PHPUnit_Framework_MockObject_MockObject|SensitiveArrayProcessor $messageProcessorMock */
         $messageProcessorMock = $this->getMockBuilder(SensitiveArrayProcessor::class)
             ->disableOriginalConstructor()
@@ -190,8 +191,8 @@ class RecordLogProcessorTest extends TestCase
         return $messageProcessorMock;
     }
 
-    private function getMessageProcessorMock() {
-
+    private function getMessageProcessorMock()
+    {
         /** @var \PHPUnit_Framework_MockObject_MockObject|SensitiveStringProcessor $messageProcessorMock */
         $messageProcessorMock = $this->getMockBuilder(SensitiveStringProcessor::class)
             ->disableOriginalConstructor()
