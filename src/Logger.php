@@ -12,6 +12,15 @@ use Monolog\Logger as MonologLogger;
 
 class Logger implements LoggerInterface
 {
+    /* Monolog Severity Levels */
+    const DEBUG = MonologLogger::DEBUG;
+    const INFO = MonologLogger::INFO;
+    const NOTICE = MonologLogger::NOTICE;
+    const WARNING = MonologLogger::WARNING;
+    const ERROR = MonologLogger::ERROR;
+    const CRITICAL = MonologLogger::CRITICAL;
+    const ALERT = MonologLogger::ALERT;
+
     static private $instance;
 
     /** @var  MonologLogger */
