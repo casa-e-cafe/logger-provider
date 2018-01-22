@@ -7,7 +7,6 @@
 
 namespace CasaCafe\Tests\Library\Logger\Processor;
 
-
 use CasaCafe\Library\Logger\Processor\SensitiveArrayProcessor;
 use PHPUnit\Framework\TestCase;
 
@@ -60,8 +59,8 @@ class SensitiveArrayProcessorTest extends TestCase
         $this->assertEquals($expectedContext, $changedContext);
     }
 
-    public function testConfigurableRegexTest() {
-
+    public function testConfigurableRegexTest()
+    {
         $context = [
             'batata' => 'frita',
             'senha' => 'deve ser exibida',
@@ -88,8 +87,8 @@ class SensitiveArrayProcessorTest extends TestCase
         $this->assertEquals($expectedContext, $replacedContext);
     }
 
-    public function testConfigurableContextReplacement() {
-
+    public function testConfigurableContextReplacement()
+    {
         $replacementString = '[** HIDDEN **]';
 
         $context = ['pass' =>  '123Catorze'];

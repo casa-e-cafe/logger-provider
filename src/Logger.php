@@ -7,21 +7,21 @@
 
 namespace CasaCafe\Library\Logger;
 
-
 use Psr\Log\LoggerInterface;
+use Monolog\Logger as MonologLogger;
 
 class Logger implements LoggerInterface
 {
     static private $instance;
 
-    /** @var  LoggerInterface */
+    /** @var  MonologLogger */
     private $vendorLogger;
 
     private function __construct()
     {
     }
 
-    public function setVendorLogger(LoggerInterface $vendorLogger)
+    public function setVendorLogger(MonologLogger $vendorLogger)
     {
         $this->vendorLogger = $vendorLogger;
     }
@@ -38,6 +38,11 @@ class Logger implements LoggerInterface
     public function __call($name, $arguments)
     {
         call_user_func_array([$this->vendorLogger, $name], $arguments);
+    }
+
+    public function isHandling($level)
+    {
+        return $this->vendorLogger->isHandling($level);
     }
 
     public function logException(\Exception $exception, $message = '', $context = [])
