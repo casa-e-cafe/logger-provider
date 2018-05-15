@@ -22,20 +22,16 @@ class RecordLogProcessor
         $this->contextProcessor = $contextProcessor;
     }
 
-    public function getProcessorFunction() : callable
+    public function processLog($record)
     {
-        return function ($record) {
+        if (isset($record['message'])) {
+            $record['message'] = $this->messageProcessor->replaceSensitiveInfo($record['message']);
+        }
 
-            if (isset($record['message'])) {
-                $record['message'] = $this->messageProcessor->replaceSensitiveInfo($record['message']);
-            }
-
-            if (isset($record['context'])) {
-                $arrayContext = json_decode(json_encode($record['context']), true);
-                $record['context'] = $this->contextProcessor->replaceSensitiveInfo($arrayContext);
-            }
-
-            return $record;
-        };
+        if (isset($record['context'])) {
+            $arrayContext = json_decode(json_encode($record['context']), true);
+            $record['context'] = $this->contextProcessor->replaceSensitiveInfo($arrayContext);
+        }
+        return $record;
     }
 }
